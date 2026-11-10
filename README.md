@@ -1,9 +1,20 @@
-# HW3
+# HW3: From One Vector to Many Tokens, and Why a New Mesh Still Hurts
+
+**DS 7400 Deep Learning · Homework 3 · "Break the Network"**
 
 **In short:**
-- I replaced my HW2 model's single global latent vector with a token-based encoder and an attention decoder 
-- I tested the change on a new transient CFD dataset and ran a controlled ablation: 1 token vs 128. Surprisingly, 1 token was as good for velocity.
-- Then I attacked the model's remaining weakness, a ~3× higher error on a never-seen mesh, with a design of my own: **density-tempered supernode sampling**. It made predictions more mesh-consistent but did not reduce the error. The analysis shows why: on the unseen mesh, the *CFD itself* differs.
+
+| | HW2 model (baseline) | HW3 model (parc3d v2) |
+|---|---|---|
+| **Task** | steady flow, one snapshot per case | transient flow over 550 ms with changing inflow, plus rollout from one CFD snapshot |
+| **Encoder** | each point pools its 16 nearest neighbours (edge-MLP + max), then **one max-pool over all points → a single 128-number vector** | **1,024 supernodes** each pool their 16 nearest cells (MLP + max) → **4 transformer layers** → **cross-attention into 128 learned tokens** (128 × 192), conditioned on the inflow |
+| **Decoder** | **SIREN**: 5 sine-activation layers × 256, input = (x, y, z) + the vector | **Fourier features** of (x, y, z) → **3 cross-attention layers** to the 128 tokens → u, v, w, p |
+| **Target** | residual vs a fixed freestream (34.3 m/s) | residual vs the **time-varying inflow**, scaled per field |
+| **Losses** | reconstruction + consistency | reconstruction + **sampling invariance** + **mesh consistency** (on layer-normed tokens) |
+| **Time stepping** | none | **latent propagator**: a transformer that steps the 128 tokens forward 5 ms at a time |
+
+- **Design 1, HW2 → HW3:** I replaced the single global vector and SIREN with the token encoder and attention decoder above, and tested it on a new transient dataset (24 inflow schedules × 4 meshes). A controlled ablation (1 token vs 128) showed that, surprisingly, **1 token was as good for velocity**. The other changes mattered more.
+- **Design 2:** I attacked the model's remaining weakness, a ~3× higher error on a never-seen mesh, with **density-tempered supernode sampling**. It made predictions more mesh-consistent but did not reduce the error. The analysis shows why: on the unseen mesh, the **CFD itself** differs.
 
 ---
 
@@ -31,7 +42,9 @@ HW2's model compressed the entire flow into **one 128-number vector**:
 - **Encoder:** each input point is described by an MLP over its 16 nearest neighbours, then a max-pool over **all** points gives one global vector.
 - **Decoder:** a SIREN (5 × 256, sine activations) maps (x, y, z, vector) to u, v, w, p.
 
-## 3. New Design
+HW2's main limitation, as reported: *it captured broad flow patterns but smoothed near-body gradients and wake structures.*
+
+## 3. My design: parc3d v2
 
 **Hypothesis.** A single global vector is an information bottleneck. Every query point is decoded from the same 128 numbers, so local detail (boundary layer, wake edges) gets averaged away. **Keeping many local tokens that each query point can attend to should remove that bottleneck.**
 
@@ -89,7 +102,7 @@ Test reconstruction NRMSE (u / v / w / p). The s11 yaw step is shown separately 
 
 ---
 
-## 4. Remaining weakness 
+## 4. Remaining weakness and my second design: density-tempered supernodes
 
 **Observation.** On m02, the never-seen mesh, v2 is about 2.5–3.4× worse for velocity.
 
@@ -187,4 +200,4 @@ At zero yaw, nothing in the inflow decides which way the wake leans. It's a symm
 
 ## AI assistance
 
-ChatGPT was used to assist with debugging and documentation. 
+ChatGPT was used to assist with debugging and assist in documentation. 
