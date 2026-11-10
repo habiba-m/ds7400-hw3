@@ -2,7 +2,7 @@
 
 **In short:**
 
-| | HW2 model (baseline) | HW3 model (parc3d v2) |
+| | HW2 model (baseline) | HW3 model |
 |---|---|---|
 | **Task** | steady flow, one snapshot per case | transient flow over 550 ms with changing inflow, plus rollout from one CFD snapshot |
 | **Encoder** | each point pools its 16 nearest neighbours (edge-MLP + max), then **one max-pool over all points → a single 128-number vector** | **1,024 supernodes** each pool their 16 nearest cells (MLP + max) → **4 transformer layers** → **cross-attention into 128 learned tokens** (128 × 192), conditioned on the inflow |
@@ -42,7 +42,7 @@ HW2's model compressed the entire flow into **one 128-number vector**:
 
 HW2's main limitation, as reported: *it captured broad flow patterns but smoothed near-body gradients and wake structures.*
 
-## 3. My design: parc3d v2
+## 3. New design
 
 **Hypothesis.** A single global vector is an information bottleneck. Every query point is decoded from the same 128 numbers, so local detail (boundary layer, wake edges) gets averaged away. **Keeping many local tokens that each query point can attend to should remove that bottleneck.**
 
