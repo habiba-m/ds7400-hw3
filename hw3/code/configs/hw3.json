@@ -1,0 +1,165 @@
+{
+ "_comment": "HW3: does density-tempered supernode sampling (model.supernode_alpha) close the unseen-mesh gap? Autoencoder only, reduced Dataset B, identical budget for every alpha. train = 6 schedules (one per family) on meshes m00 m01 m03; val = 3 held-out schedules on m01 (checkpoint choice); test = the same 3 held-out schedules on m00 (seen mesh) and on m02 (never-seen mesh), plus 3 training schedules on m02.",
+ "out": "/scratch/crv4jj/parc3d_v2/runs/hw3/alpha_0.0",
+ "seed": 0,
+ "data": {
+  "root": "/scratch/crv4jj/ellipsoid_v2/exports",
+  "probes": "/scratch/crv4jj/ellipsoid_v2/probes/probes.npy",
+  "cases": [
+   "B_m00_s00_ramp",
+   "B_m00_s04_speedsine",
+   "B_m00_s08_yawstep",
+   "B_m00_s12_yawsine",
+   "B_m00_s16_gust",
+   "B_m00_s20_combined",
+   "B_m01_s00_ramp",
+   "B_m01_s04_speedsine",
+   "B_m01_s08_yawstep",
+   "B_m01_s12_yawsine",
+   "B_m01_s16_gust",
+   "B_m01_s20_combined",
+   "B_m03_s00_ramp",
+   "B_m03_s04_speedsine",
+   "B_m03_s08_yawstep",
+   "B_m03_s12_yawsine",
+   "B_m03_s16_gust",
+   "B_m03_s20_combined",
+   "B_m01_s03_ramp",
+   "B_m01_s11_yawstep",
+   "B_m01_s19_gust",
+   "B_m00_s03_ramp",
+   "B_m00_s11_yawstep",
+   "B_m00_s19_gust",
+   "B_m02_s03_ramp",
+   "B_m02_s11_yawstep",
+   "B_m02_s19_gust",
+   "B_m02_s00_ramp",
+   "B_m02_s08_yawstep",
+   "B_m02_s16_gust"
+  ],
+  "splits": {
+   "train": [
+    "B_m00_s00_ramp",
+    "B_m00_s04_speedsine",
+    "B_m00_s08_yawstep",
+    "B_m00_s12_yawsine",
+    "B_m00_s16_gust",
+    "B_m00_s20_combined",
+    "B_m01_s00_ramp",
+    "B_m01_s04_speedsine",
+    "B_m01_s08_yawstep",
+    "B_m01_s12_yawsine",
+    "B_m01_s16_gust",
+    "B_m01_s20_combined",
+    "B_m03_s00_ramp",
+    "B_m03_s04_speedsine",
+    "B_m03_s08_yawstep",
+    "B_m03_s12_yawsine",
+    "B_m03_s16_gust",
+    "B_m03_s20_combined"
+   ],
+   "val": [
+    "B_m01_s03_ramp",
+    "B_m01_s11_yawstep",
+    "B_m01_s19_gust"
+   ],
+   "test": [
+    "B_m00_s03_ramp",
+    "B_m00_s11_yawstep",
+    "B_m00_s19_gust",
+    "B_m02_s03_ramp",
+    "B_m02_s11_yawstep",
+    "B_m02_s19_gust",
+    "B_m02_s00_ramp",
+    "B_m02_s08_yawstep",
+    "B_m02_s16_gust"
+   ]
+  },
+  "t_min": 0.0,
+  "pool_uniform": 32768,
+  "pool_importance": 32768,
+  "pool_device": "cpu",
+  "splits_file": ""
+ },
+ "physics": {
+  "u_ref": 34.3,
+  "bounds": [
+   [
+    -2.0,
+    2.0
+   ],
+   [
+    -3.0,
+    6.0
+   ],
+   [
+    -2.0,
+    2.0
+   ]
+  ],
+  "accel_length": 9.0
+ },
+ "model": {
+  "dim": 192,
+  "heads": 4,
+  "n_freq": 9,
+  "n_supernodes": 1024,
+  "k_neighbors": 16,
+  "rel_scale": 20.0,
+  "enc_blocks": 4,
+  "n_latent": 128,
+  "latent_blocks": 2,
+  "dec_blocks": 3,
+  "prop_blocks": 4,
+  "supernode_alpha": 0.0
+ },
+ "ae": {
+  "steps": 20000,
+  "batch": 4,
+  "n_context": [
+   8192,
+   16384
+  ],
+  "n_query": 8192,
+  "lr": 0.0003,
+  "warmup": 1000,
+  "lambda_invariance": 0.1,
+  "lambda_mesh": 0.1,
+  "eval_every": 2500,
+  "eval_frames_per_run": 8,
+  "amp": true
+ },
+ "dyn": {
+  "steps": 60000,
+  "batch": 8,
+  "horizons": [
+   1,
+   2,
+   4,
+   8,
+   16,
+   32
+  ],
+  "stage_steps": 4000,
+  "n_query": 4096,
+  "lambda_field": 1.0,
+  "noise": 0.01,
+  "lr": 0.0003,
+  "warmup": 500,
+  "eval_every": 2000,
+  "amp": true,
+  "select_fields": [
+   0,
+   1,
+   2
+  ]
+ },
+ "sanity": {
+  "run": "B_m00_s12_yawsine",
+  "frame": -1,
+  "snapshot_steps": 3000,
+  "trajectory_steps": 8000,
+  "snapshot_pass": 0.1,
+  "trajectory_pass": 0.15
+ }
+}

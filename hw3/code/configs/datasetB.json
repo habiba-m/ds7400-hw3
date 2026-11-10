@@ -1,0 +1,98 @@
+{
+ "_comment": "Dataset B v2: 4 meshes x 24 randomized schedules (cfd/config.py). Splits come from splits.json written by generate_cases.py: train/val = schedules on meshes m00, m01, m03; test = held-out schedules + everything on the held-out mesh m02.",
+ "out": "/scratch/crv4jj/parc3d_v2/runs/datasetB",
+ "seed": 0,
+ "data": {
+  "root": "/scratch/crv4jj/ellipsoid_v2/exports",
+  "probes": "/scratch/crv4jj/ellipsoid_v2/probes/probes.npy",
+  "cases": [
+   "B_*"
+  ],
+  "splits": {},
+  "t_min": 0.0,
+  "pool_uniform": 32768,
+  "pool_importance": 32768,
+  "pool_device": "cpu",
+  "splits_file": "/scratch/crv4jj/ellipsoid_v2/splits.json"
+ },
+ "physics": {
+  "u_ref": 34.3,
+  "bounds": [
+   [
+    -2.0,
+    2.0
+   ],
+   [
+    -3.0,
+    6.0
+   ],
+   [
+    -2.0,
+    2.0
+   ]
+  ],
+  "accel_length": 9.0
+ },
+ "model": {
+  "dim": 192,
+  "heads": 4,
+  "n_freq": 9,
+  "n_supernodes": 1024,
+  "k_neighbors": 16,
+  "rel_scale": 20.0,
+  "enc_blocks": 4,
+  "n_latent": 128,
+  "latent_blocks": 2,
+  "dec_blocks": 3,
+  "prop_blocks": 4
+ },
+ "ae": {
+  "steps": 150000,
+  "batch": 4,
+  "n_context": [
+   8192,
+   16384
+  ],
+  "n_query": 8192,
+  "lr": 0.0003,
+  "warmup": 1000,
+  "lambda_invariance": 0.1,
+  "lambda_mesh": 0.1,
+  "eval_every": 2000,
+  "eval_frames_per_run": 8,
+  "amp": true
+ },
+ "dyn": {
+  "steps": 60000,
+  "batch": 8,
+  "horizons": [
+   1,
+   2,
+   4,
+   8,
+   16,
+   32
+  ],
+  "stage_steps": 4000,
+  "n_query": 4096,
+  "lambda_field": 1.0,
+  "noise": 0.01,
+  "lr": 0.0003,
+  "warmup": 500,
+  "eval_every": 2000,
+  "amp": true,
+  "select_fields": [
+   0,
+   1,
+   2
+  ]
+ },
+ "sanity": {
+  "run": "B_m00_s13_yawsine",
+  "frame": -1,
+  "snapshot_steps": 3000,
+  "trajectory_steps": 8000,
+  "snapshot_pass": 0.1,
+  "trajectory_pass": 0.15
+ }
+}

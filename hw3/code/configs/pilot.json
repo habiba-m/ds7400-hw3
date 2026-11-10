@@ -1,0 +1,79 @@
+{
+  "_comment": "Pilot: Dataset B, mesh m00, 5 inflow schedules. Every path and split is here; scripts take only --config (plus --set key=value overrides).",
+  "out": "/scratch/crv4jj/parc3d_v2/runs/pilot",
+  "seed": 0,
+
+  "data": {
+    "root": "/scratch/crv4jj/ellipsoid_datasets/exports",
+    "probes": "/scratch/crv4jj/ellipsoid_datasets/probes/probes.npy",
+    "cases": ["B_m00_*"],
+    "splits_file": "",
+    "splits": {
+      "train": ["B_m00_speed_ramp", "B_m00_speed_sine", "B_m00_yaw_step"],
+      "val": ["B_m00_gust"],
+      "test": ["B_m00_yaw_sine"]
+    },
+    "t_min": 0.0,
+    "pool_uniform": 65536,
+    "pool_importance": 65536,
+    "pool_device": "cuda"
+  },
+
+  "physics": {
+    "u_ref": 34.3,
+    "bounds": [[-2.0, 2.0], [-3.0, 6.0], [-2.0, 2.0]],
+    "accel_length": 9.0
+  },
+
+  "model": {
+    "dim": 192,
+    "heads": 4,
+    "n_freq": 9,
+    "n_supernodes": 1024,
+    "k_neighbors": 16,
+    "rel_scale": 20.0,
+    "enc_blocks": 4,
+    "n_latent": 128,
+    "latent_blocks": 2,
+    "dec_blocks": 3,
+    "prop_blocks": 4
+  },
+
+  "ae": {
+    "steps": 60000,
+    "batch": 4,
+    "n_context": [8192, 16384],
+    "n_query": 8192,
+    "lr": 3e-4,
+    "warmup": 1000,
+    "lambda_invariance": 0.1,
+    "lambda_mesh": 0.1,
+    "eval_every": 2000,
+    "eval_frames_per_run": 12,
+    "amp": true
+  },
+
+  "dyn": {
+    "steps": 30000,
+    "batch": 8,
+    "horizons": [1, 2, 4, 8, 16, 32],
+    "stage_steps": 4000,
+    "n_query": 4096,
+    "lambda_field": 1.0,
+    "noise": 0.01,
+    "lr": 3e-4,
+    "warmup": 500,
+    "eval_every": 2000,
+    "select_fields": [0, 1, 2],
+    "amp": true
+  },
+
+  "sanity": {
+    "run": "B_m00_yaw_sine",
+    "frame": -1,
+    "snapshot_steps": 3000,
+    "trajectory_steps": 8000,
+    "snapshot_pass": 0.10,
+    "trajectory_pass": 0.15
+  }
+}
