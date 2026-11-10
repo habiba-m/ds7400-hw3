@@ -1,6 +1,4 @@
-# HW3: From One Vector to Many Tokens, and Why a New Mesh Still Hurts
-
-**DS 7400 Deep Learning · Homework 3 · "Break the Network"**
+# HW3
 
 **In short:**
 
