@@ -3,9 +3,18 @@
 **DS 7400 Deep Learning · Homework 3 · "Break the Network"**
 
 **In short:**
-- I replaced my HW2 model's single global latent vector with a token-based encoder and an attention decoder (parc3d v2).
-- I tested the change on a new transient CFD dataset and ran a controlled ablation: 1 token vs 128. Surprisingly, 1 token was as good for velocity.
-- Then I attacked the model's remaining weakness, a ~3× higher error on a never-seen mesh, with a design of my own: **density-tempered supernode sampling**. It made predictions more mesh-consistent but did not reduce the error. The analysis shows why: on the unseen mesh, the *CFD itself* differs.
+
+| | HW2 model (baseline) | HW3 model (parc3d v2) |
+|---|---|---|
+| **Task** | steady flow, one snapshot per case | transient flow over 550 ms with changing inflow, plus rollout from one CFD snapshot |
+| **Encoder** | each point pools its 16 nearest neighbours (edge-MLP + max), then **one max-pool over all points → a single 128-number vector** | **1,024 supernodes** each pool their 16 nearest cells (MLP + max) → **4 transformer layers** → **cross-attention into 128 learned tokens** (128 × 192), conditioned on the inflow |
+| **Decoder** | **SIREN**: 5 sine-activation layers × 256, input = (x, y, z) + the vector | **Fourier features** of (x, y, z) → **3 cross-attention layers** to the 128 tokens → u, v, w, p |
+| **Target** | residual vs a fixed freestream (34.3 m/s) | residual vs the **time-varying inflow**, scaled per field |
+| **Losses** | reconstruction + consistency | reconstruction + **sampling invariance** + **mesh consistency** (on layer-normed tokens) |
+| **Time stepping** | none | **latent propagator**: a transformer that steps the 128 tokens forward 5 ms at a time |
+
+- **Design 1, HW2 → HW3:** I replaced the single global vector and SIREN with the token encoder and attention decoder above, and tested it on a new transient dataset (24 inflow schedules × 4 meshes). A controlled ablation (1 token vs 128) showed that, surprisingly, **1 token was as good for velocity**. The other changes mattered more.
+- **Design 2:** I attacked the model's remaining weakness, a ~3× higher error on a never-seen mesh, with **density-tempered supernode sampling**. It made predictions more mesh-consistent but did not reduce the error. The analysis shows why: on the unseen mesh, the **CFD itself** differs.
 
 ---
 
