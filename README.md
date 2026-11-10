@@ -1,9 +1,7 @@
-# HW3: From One Vector to Many Tokens, and Why a New Mesh Still Hurts
-
-**DS 7400 Deep Learning · Homework 3 · "Break the Network"**
+# HW3
 
 **In short:**
-- I replaced my HW2 model's single global latent vector with a token-based encoder and an attention decoder (parc3d v2).
+- I replaced my HW2 model's single global latent vector with a token-based encoder and an attention decoder 
 - I tested the change on a new transient CFD dataset and ran a controlled ablation: 1 token vs 128. Surprisingly, 1 token was as good for velocity.
 - Then I attacked the model's remaining weakness, a ~3× higher error on a never-seen mesh, with a design of my own: **density-tempered supernode sampling**. It made predictions more mesh-consistent but did not reduce the error. The analysis shows why: on the unseen mesh, the *CFD itself* differs.
 
@@ -33,9 +31,7 @@ HW2's model compressed the entire flow into **one 128-number vector**:
 - **Encoder:** each input point is described by an MLP over its 16 nearest neighbours, then a max-pool over **all** points gives one global vector.
 - **Decoder:** a SIREN (5 × 256, sine activations) maps (x, y, z, vector) to u, v, w, p.
 
-HW2's main limitation, as reported: *it captured broad flow patterns but smoothed near-body gradients and wake structures.*
-
-## 3. My design: parc3d v2
+## 3. New Design
 
 **Hypothesis.** A single global vector is an information bottleneck. Every query point is decoded from the same 128 numbers, so local detail (boundary layer, wake edges) gets averaged away. **Keeping many local tokens that each query point can attend to should remove that bottleneck.**
 
@@ -93,7 +89,7 @@ Test reconstruction NRMSE (u / v / w / p). The s11 yaw step is shown separately 
 
 ---
 
-## 4. Remaining weakness and my second design: density-tempered supernodes
+## 4. Remaining weakness 
 
 **Observation.** On m02, the never-seen mesh, v2 is about 2.5–3.4× worse for velocity.
 
@@ -191,4 +187,4 @@ At zero yaw, nothing in the inflow decides which way the wake leans. It's a symm
 
 ## AI assistance
 
-Claude (Anthropic) was used to brainstorm candidate designs, help implement and test the sampling layer and analysis scripts, and draft documentation. I chose the design and checked the reasoning and results.
+ChatGPT was used to assist with debugging and documentation. 
